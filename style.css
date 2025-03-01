@@ -1,0 +1,33 @@
+body {
+    font-family: "Duru Sans", Verdana, sans-serif;
+    text-align: center;
+    background-color: #e4e4e4;
+    padding: 50px;
+}
+
+.play {
+    background-color: #d8d8d8f5;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0,  0, 0, 0.432);
+    margin: auto;
+    align-items: center;
+    width: 600px;
+    padding:20px;
+}
+
+.button {
+    padding: 8px 12px;
+    font-size: 20px;
+    cursor: pointer;
+    border-style: solid;
+    border-color: #333633;
+    border-radius: 5px;
+    background-color: #69796ab4;
+    color: white;
+    margin: 5px;
+}
+
+.button:hover {
+    background-color:#4caf50;
+    border-color:#3d723f;
+}
