@@ -4,16 +4,55 @@
     <meta charset="UTF-8">
     <title>Discrete Mathematics Simulator</title>
     <link rel="stylesheet" href="style.css" type="text/css">
+    <script src="scripts.js"></script>
 </head>
 
 <body>
     <div class="play"> 
-        <h1>You have 0 proof points</h1>
+        <h1 id="pointcount"> You have 0 proof points</h1>
         <button class="button" onclick="solveQuestion();"> Solve a Question </button>
         <button class="button" onclick="unlockPredicate();"> Unlock Predicate Logic </button>
         <button class="button" onclick="unlockSet();"> Unlock Set Theory </button>
         <button class="button" onclick="unlockRelations();"> Unlock Relations </button>
         <button class="button" onclick="unlockClassifying();"> Unlock Classifying Relations </button>
     </div>
+
+    <nav>
+        <!--
+        We wrap the toggle button in a div in order to create an element that can overlap the content
+        as it scrolls down from the top of the screen.
+        -->
+        <div>
+          <!--
+          This button will represent our toggle
+          Note the following:
+        - The id of the button is "nav-toggle". We will use this to grab our element in JavaScript.
+          - The aria-label attribute is used to provide a label for screen readers to indicate the button's function.
+          - The onclick attribute is used to call the toggleNav function when the button is clicked
+            - We will need to define this function separately in a JavaScript file.
+          -->
+          <button
+            id="nav-toggle"
+            aria-label="toggle navigation menu"
+            onclick="toggleNav()">
+            <!--
+            These spans will be used to construct the menu toggle icon
+            We will animate between three horizontal lines and a cross
+            -->
+            <span></span>
+            <span></span>
+            <span></span>
+          </button>
+        </div>
+        <!--
+        We add an aria-label attribute to provide a label for screen readers indicating that this
+        is the actual menu.
+        -->
+        <ul id="nav-menu" aria-label="navigation menu">
+          <li class="active"><a href="index.html">Home</a></li>
+          <li><a href="leaderboards.html">Leaderboards</a></li>
+          <li><a href="test.html">Test</a></li>
+        </ul>
+      </nav>
 </body>
 </html>
