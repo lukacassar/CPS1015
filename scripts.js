@@ -1,16 +1,20 @@
 var points = 0;
 var cooldown = false;
 var baseGenerationRate = 2;
-var predicateUpgrades = 0; 
-var pointsPerSolve = 1; 
+var predicateUpgrades = 0;
+var pointsPerSolve = 1;
+var solveCooldown = 600;
 
 
 const unlockCosts = {
     predicate: 100,
     set: 1000,
     relations: 5000,
-    classifying: 99999,
-    predicateUpgrade: 250
+    classifying: 20000,
+    predicateUpgrade: 250,
+    setUpgrade: 1500, 
+    relationsUpgrade: 7500, 
+    classifyingUpgrade: 30000
 };
 
 function updatePoints() {
@@ -20,7 +24,7 @@ function updatePoints() {
 
 function solveQuestion() {
     if (cooldown) return;
-    points += pointsPerSolve; 
+    points += pointsPerSolve;
     updatePoints();
     cooldown = true;
 
@@ -30,7 +34,7 @@ function solveQuestion() {
         setTimeout(function () {
             cooldown = false;
             button.classList.remove('cooldown');
-        }, 600);
+        }, solveCooldown);
     }
 }
 
@@ -63,30 +67,89 @@ function upgradePredicate() {
 function unlockSet() {
     if (points >= unlockCosts.set) {
         points -= unlockCosts.set;
+        document.getElementById('set-upgrade').style.display = 'flex'; // Show set-upgrade button
+        document.querySelector('button[onclick="unlockSet();"]').style.display = 'none'; // Hide Unlock Set Theory button
         updatePoints();
-        alert('Set Theory unlocked!');
+        alert('Set Theory unlocked! New upgrade available.');
     } else {
         alert(`Need ${unlockCosts.set - points} more points!`);
+    }
+}
+
+function upgradeSet() {
+    if (points >= unlockCosts.setUpgrade) {
+        points -= unlockCosts.setUpgrade;
+        baseGenerationRate += 0.2; 
+        document.getElementById('set-upgrade').style.display = 'none'; 
+        updatePoints();
+        updateTooltips();
+        alert('Idle generation rate increased by 1 point every 5 seconds!');
+    } else {
+        alert(`Need ${unlockCosts.setUpgrade - points} more points!`);
     }
 }
 
 function unlockRelations() {
     if (points >= unlockCosts.relations) {
         points -= unlockCosts.relations;
+        document.getElementById('relations-upgrade').style.display = 'flex'; // Show relations-upgrade button
+        document.querySelector('button[onclick="unlockRelations();"]').style.display = 'none'; // Hide Unlock Relations button
         updatePoints();
-        alert('Relations unlocked!');
+        alert('Relations unlocked! New upgrade available.');
     } else {
         alert(`Need ${unlockCosts.relations - points} more points!`);
+    }
+}
+
+function upgradeRelations() {
+    if (points >= unlockCosts.relationsUpgrade) {
+        points -= unlockCosts.relationsUpgrade;
+        document.getElementById('relations-upgrade').style.display = 'none'; // Hide relations-upgrade button (one-time use)
+        setInterval(() => {
+            pointsPerSolve *= 2.5; // Boost points by 2.5x
+            updateTooltips();
+            alert('Points boosted by 2.5x for 10 seconds!');
+            setTimeout(() => {
+                pointsPerSolve /= 2.5; // Revert boost after 10 seconds
+                updateTooltips();
+            }, 10000);
+        }, 60000); // Repeat every 60 seconds
+        updatePoints();
+        updateTooltips();
+        alert('Activated 2.5x point boost every 60 seconds for 10 seconds!');
+    } else {
+        alert(`Need ${unlockCosts.relationsUpgrade - points} more points!`);
     }
 }
 
 function unlockClassifying() {
     if (points >= unlockCosts.classifying) {
         points -= unlockCosts.classifying;
+        document.getElementById('classifying-upgrade').style.display = 'flex'; // Show classifying-upgrade button
+        document.querySelector('button[onclick="unlockClassifying();"]').style.display = 'none'; // Hide Unlock Classifying Relations button
         updatePoints();
-        alert('Classifying Relations unlocked!');
+        alert('Classifying Relations unlocked! Secret upgrade available.');
     } else {
         alert(`Need ${unlockCosts.classifying - points} more points!`);
+    }
+}
+
+function upgradeClassifying() {
+    if (points >= unlockCosts.classifyingUpgrade) {
+        points -= unlockCosts.classifyingUpgrade;
+        document.getElementById('classifying-upgrade').style.display = 'none'; // Hide classifying-upgrade button (one-time use)
+        // Randomly choose between tripling points or reducing cooldown
+        if (Math.random() < 0.5) {
+            points *= 3; // Triple current points
+            alert('Your points have been tripled!');
+        } else {
+            solveCooldown = 100; // Reduce Solve Question cooldown to 100ms
+            alert('Solve Question cooldown reduced to 100ms!');
+        }
+        updatePoints();
+        updateTooltips();
+    } else {
+        alert(`Need ${unlockCosts.classifyingUpgrade - points} more points!`);
     }
 }
 
@@ -96,7 +159,10 @@ function createTooltips() {
         { selector: 'button[onclick="unlockSet();"]', cost: unlockCosts.set },
         { selector: 'button[onclick="unlockRelations();"]', cost: unlockCosts.relations },
         { selector: 'button[onclick="unlockClassifying();"]', cost: unlockCosts.classifying },
-        { selector: '#predicate-upgrade', cost: unlockCosts.predicateUpgrade }
+        { selector: '#predicate-upgrade', cost: unlockCosts.predicateUpgrade },
+        { selector: '#set-upgrade', cost: unlockCosts.setUpgrade },
+        { selector: '#relations-upgrade', cost: unlockCosts.relationsUpgrade },
+        { selector: '#classifying-upgrade', cost: unlockCosts.classifyingUpgrade }
     ];
 
     items.forEach(item => {
@@ -111,13 +177,22 @@ function createTooltips() {
 }
 
 function updateTooltips() {
-    const predicateButton = document.querySelector('#predicate-upgrade');
-    if (predicateButton) {
-        const tooltip = predicateButton.querySelector('.tooltip');
-        if (tooltip) {
-            tooltip.textContent = `Cost: ${unlockCosts.predicateUpgrade} points`;
+    const buttons = [
+        { selector: '#predicate-upgrade', cost: unlockCosts.predicateUpgrade },
+        { selector: '#set-upgrade', cost: unlockCosts.setUpgrade },
+        { selector: '#relations-upgrade', cost: unlockCosts.relationsUpgrade },
+        { selector: '#classifying-upgrade', cost: unlockCosts.classifyingUpgrade }
+    ];
+
+    buttons.forEach(button => {
+        const element = document.querySelector(button.selector);
+        if (element) {
+            const tooltip = element.querySelector('.tooltip');
+            if (tooltip) {
+                tooltip.textContent = `Cost: ${button.cost} points`;
+            }
         }
-    }
+    });
 }
 
 // Idle Resource Generator
