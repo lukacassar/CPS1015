@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Game</title>
+    <link rel="stylesheet" href="style.css" type="text/css">
+    <script src="scripts.js" defer></script>
+</head>
+<body>
+    <!-- Points Counter -->
+    <div id="pointcount">
+        <h1 id="points-text">You have 0 proof points</h1>
+        <p id="rate-text">Idle generation rate is at 0.2 points/s</p>
+    </div>
+    
+    <!-- Events Button -->
+    <button id="event-button" class="button">📅 Events</button>
+
+    <!-- Main Menu Return Button -->
+    <button id="mainmenu-button" class="button" onclick="window.location.href='index.html'">🏠 Main Menu</button>
+
+    <!-- Main Gameplay Button -->
+    <div class="game-button-container">
+        <button class="button" onclick="solveQuestion();">Solve<br>Question</button>
+    </div>
+
+    <!-- Right Sidebar -->
+    <nav>
+        <ul id="nav-menu" aria-label="navigation menu">
+            <li><button class="button" onclick="unlockPredicate();">Unlock Predicate Logic</button></li>
+            <li><button class="button" onclick="unlockSet();">Unlock Set Theory</button></li>
+            <li><button class="button" onclick="unlockRelations();">Unlock Relations</button></li>
+            <li><button class="button" onclick="unlockClassifying();">Unlock Classifying Relations</button></li>
+        </ul>
+    </nav>
+
+    <!-- Sidebar Toggle Button -->
+    <button id="nav-toggle" aria-label="toggle navigation menu" onclick="toggleNav()">☰</button>
+
+    <!-- Circles -->
+    <button id="predicate-upgrade" class="button" onclick="upgradePredicate();">Increase Clicker Points!</button>
+</body>
+</html>

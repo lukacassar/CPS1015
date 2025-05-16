@@ -1,74 +1,139 @@
 var points = 0;
 var cooldown = false;
+var baseGenerationRate = 2;
+var predicateUpgrades = 0; 
+var pointsPerSolve = 1; 
 
-// Update point count display
+
+const unlockCosts = {
+    predicate: 100,
+    set: 1000,
+    relations: 5000,
+    classifying: 99999,
+    predicateUpgrade: 250
+};
+
 function updatePoints() {
-    document.getElementById("pointcount").innerHTML = "You have " + points + " proof points";
+    document.getElementById("points-text").innerHTML = `You have ${points} proof points`;
+    document.getElementById("rate-text").innerHTML = `Idle generation rate is at ${baseGenerationRate.toFixed(1)} points per 5 seconds`;
 }
 
-// Solve a question with cooldown and animation
 function solveQuestion() {
     if (cooldown) return;
-    points++;
+    points += pointsPerSolve; 
     updatePoints();
     cooldown = true;
-    
-    var button = document.querySelector('button[onclick="solveQuestion();"]');
-    button.classList.add('cooldown');
 
-    setTimeout(function() {
-        cooldown = false;
-        button.classList.remove('cooldown');
-    }, 600);
+    var button = document.querySelector('button[onclick="solveQuestion();"]');
+    if (button) {
+        button.classList.add('cooldown');
+        setTimeout(function () {
+            cooldown = false;
+            button.classList.remove('cooldown');
+        }, 600);
+    }
 }
 
-// Unlock functions
 function unlockPredicate() {
-    if (points >= 100) {
-        points -= 100;
+    if (points >= unlockCosts.predicate) {
+        points -= unlockCosts.predicate;
+        document.getElementById('predicate-upgrade').style.display = 'flex'; // Show upgrade button as flex
+        document.querySelector('button[onclick="unlockPredicate();"]').style.display = 'none'; // Hide Unlock Predicate Logic button
         updatePoints();
-        alert('Predicate Logic unlocked!');
+        alert('Predicate Logic unlocked! New upgrade available.');
     } else {
-        alert('Not enough points to unlock Predicate Logic.');
+        alert(`Need ${unlockCosts.predicate - points} more points!`);
+    }
+}
+
+function upgradePredicate() {
+    if (points >= unlockCosts.predicateUpgrade) {
+        points -= unlockCosts.predicateUpgrade;
+        predicateUpgrades++;
+        pointsPerSolve = 3; // Increase points per Solve Question click to 3
+        document.getElementById('predicate-upgrade').style.display = 'none'; // Hide Boost Solve button (one-time use)
+        updatePoints();
+        updateTooltips();
+        alert('Solve Question now awards 3 points per click!');
+    } else {
+        alert(`Need ${unlockCosts.predicateUpgrade - points} more points!`);
     }
 }
 
 function unlockSet() {
-    if (points >= 1000) {
-        points -= 1000;
+    if (points >= unlockCosts.set) {
+        points -= unlockCosts.set;
         updatePoints();
         alert('Set Theory unlocked!');
     } else {
-        alert('Not enough points to unlock Set Theory.');
+        alert(`Need ${unlockCosts.set - points} more points!`);
     }
 }
 
 function unlockRelations() {
-    if (points >= 5000) {
-        points -= 5000;
+    if (points >= unlockCosts.relations) {
+        points -= unlockCosts.relations;
         updatePoints();
         alert('Relations unlocked!');
     } else {
-        alert('Not enough points to unlock Relations.');
+        alert(`Need ${unlockCosts.relations - points} more points!`);
     }
 }
 
 function unlockClassifying() {
-    if (points >= 99999) {
-        points -= 99999;
+    if (points >= unlockCosts.classifying) {
+        points -= unlockCosts.classifying;
         updatePoints();
         alert('Classifying Relations unlocked!');
     } else {
-        alert('Not enough points to unlock Classifying Relations.');
+        alert(`Need ${unlockCosts.classifying - points} more points!`);
     }
 }
 
-// Idle point generation every 5 seconds
-setInterval(function() {
-    points++;
+function createTooltips() {
+    const items = [
+        { selector: 'button[onclick="unlockPredicate();"]', cost: unlockCosts.predicate },
+        { selector: 'button[onclick="unlockSet();"]', cost: unlockCosts.set },
+        { selector: 'button[onclick="unlockRelations();"]', cost: unlockCosts.relations },
+        { selector: 'button[onclick="unlockClassifying();"]', cost: unlockCosts.classifying },
+        { selector: '#predicate-upgrade', cost: unlockCosts.predicateUpgrade }
+    ];
+
+    items.forEach(item => {
+        const button = document.querySelector(item.selector);
+        if (button) {
+            const tooltip = document.createElement('div');
+            tooltip.className = 'tooltip';
+            tooltip.textContent = `Cost: ${item.cost} points`;
+            button.appendChild(tooltip);
+        }
+    });
+}
+
+function updateTooltips() {
+    const predicateButton = document.querySelector('#predicate-upgrade');
+    if (predicateButton) {
+        const tooltip = predicateButton.querySelector('.tooltip');
+        if (tooltip) {
+            tooltip.textContent = `Cost: ${unlockCosts.predicateUpgrade} points`;
+        }
+    }
+}
+
+// Idle Resource Generator
+setInterval(function () {
+    points += baseGenerationRate; 
     updatePoints();
-}, 5000);
+}, 5000); 
 
 function toggleNav() {
     document.querySelector("nav").classList.toggle("open");
+    document.getElementById("nav-toggle").classList.toggle("active");
 }
+
+document.addEventListener('DOMContentLoaded', function() {
+    updatePoints();
+    createTooltips();
+    updateTooltips();
+});
+
