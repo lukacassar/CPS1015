@@ -63,7 +63,7 @@ h1 {
     to { height: 0%; }
 }
 
-/* Points Counter */
+
 #pointcount {
     position: fixed;
     top: 20px;
@@ -81,7 +81,7 @@ h1 {
     color: #333; 
 }
 
-/* Sidebar */
+
 nav {
     position: fixed;
     top: 50%;
@@ -175,7 +175,7 @@ nav.open {
     line-height: 1.3;
 }
 
-/* Tooltips */
+
 .tooltip {
     position: absolute;
     bottom: 100%;
@@ -199,7 +199,7 @@ nav.open {
     bottom: 120%;
 }
 
-/* Toggle Button */
+
 #nav-toggle {
     position: fixed;
     top: 50%;
@@ -225,11 +225,60 @@ nav.open {
     background: #4caf50;
 }
 
-/* Game Elements */
+
 #event-button {
     position: fixed;
     top: 20px;
     right: 20px;
+}
+
+#achievements-button {
+    position: fixed;
+    top: 70px; 
+    right: 20px;
+}
+
+#achievements-panel {
+    position: fixed;
+    top: 120px; 
+    right: 20px;
+    background: #d8d8d8f5; 
+    padding: 15px;
+    border-radius: 10px;
+    box-shadow: 0 0 5px gray;
+    max-width: 300px;
+    max-height: 50vh;
+    overflow-y: auto;
+    z-index: 1000;
+}
+
+#achievements-panel h2 {
+    margin: 0 0 10px;
+    font-size: 20px;
+    color: #333;
+}
+
+#achievements-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.achievement {
+    padding: 8px;
+    margin: 5px 0;
+    border-radius: 5px;
+    font-size: 16px;
+}
+
+.achievement.unlocked {
+    background: #4caf50; 
+    color: white;
+}
+
+.achievement.locked {
+    background: #a0a0a0; 
+    color: #333;
 }
 
 #mainmenu-button {
@@ -254,4 +303,69 @@ nav.open {
     align-items: center;
     justify-content: center;
     line-height: 1.3;
+}
+
+#points-indicator {
+    position: fixed;
+    top: 9%; 
+    left: 10%; 
+    pointer-events: none; 
+}
+
+.points-gain {
+    color: #4caf50;
+    font-size: 20px;
+    font-weight: bold;
+    position: absolute;
+    top: 0; 
+    left: 0; 
+    animation: rise-and-fade 1.9s ease-out forwards;
+}
+
+@keyframes rise-and-fade {
+    0% {
+        transform: translateY(0);
+        opacity: 1;
+    }
+    100% {
+        transform: translateY(-300%); 
+        opacity: 0;
+    }
+}
+
+#notification-container {
+    position: fixed;
+    top: 290px; 
+    left: 20px; 
+    pointer-events: none; 
+}
+
+.notification {
+    background: #4caf50; 
+    color: white;
+    font-size: 16px;
+    font-weight: bold;
+    padding: 8px 12px;
+    border-radius: 5px;
+    margin-bottom: 10px; 
+    opacity: 0;
+    animation: notify 2s ease-in-out forwards;
+}
+
+@keyframes notify {
+    0% {
+        transform: translateY(0);
+        opacity: 0;
+    }
+    10% {
+        opacity: 1; 
+    }
+    90% {
+        transform: translateY(-10px); 
+        opacity: 1;
+    }
+    100% {
+        transform: translateY(-10px);
+        opacity: 0; 
+    }
 }

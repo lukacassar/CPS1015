@@ -16,13 +16,25 @@
     <!-- Events Button -->
     <button id="event-button" class="button">📅 Events</button>
 
+    <!-- Achievements Button -->
+    <button id="achievements-button" class="button" onclick="toggleAchievements()">🏆 Achievements</button>
+
+    <!-- Achievements Panel -->
+    <div id="achievements-panel" style="display: none;">
+        <h2>Achievements</h2>
+        <ul id="achievements-list"></ul>
+    </div>
+
     <!-- Main Menu Return Button -->
     <button id="mainmenu-button" class="button" onclick="window.location.href='index.html'">🏠 Main Menu</button>
 
-    <!-- Main Gameplay Button -->
+   <!-- Main Gameplay Button -->
     <div class="game-button-container">
         <button class="button" onclick="solveQuestion();">Solve<br>Question</button>
     </div>
+
+    <div id="points-indicator"></div>
+    <div id="notification-container"></div>
 
     <!-- Right Sidebar -->
     <nav>
