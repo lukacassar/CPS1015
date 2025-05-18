@@ -14,6 +14,8 @@ let idleInterval = null;
 let minigameScore = 0; 
 let minigameInterval = null; 
 let pointBoostActive = false; 
+let playerId = localStorage.getItem('playerId') || null;
+const API_URL = 'http://localhost:3000';
 
 // in game notifications
 function notify(message) {
@@ -88,6 +90,7 @@ function showPointsIndicator(pointsGained) {
         }, 900); 
     }
 }
+
 function checkBonus() {
     let bonusChance = 0;
     if (classifyingUnlocked) {
@@ -150,6 +153,7 @@ function unlockPredicate() {
         predicateUnlocked = true; 
         updatePoints();
         notify('Predicate Logic unlocked! New upgrade available.');
+        saveGameState();
     } else {
         notify(`Need ${unlockCosts.predicate - points} more points!`);
     }
@@ -166,6 +170,7 @@ function upgradePredicate() {
         updateTooltips();
         checkAchievements(); 
         notify('Solve Question now awards 3 points per click!');
+        saveGameState();
     } else {
         notify(`Need ${unlockCosts.predicateUpgrade - points} more points!`);
     }
@@ -179,6 +184,7 @@ function unlockSet() {
         setUnlocked = true; 
         updatePoints();
         notify('Set Theory unlocked! New upgrade available.');
+        saveGameState();
     } else {
         notify(`Need ${unlockCosts.set - points} more points!`);
     }
@@ -198,6 +204,7 @@ function upgradeSet() {
         updateTooltips();
         checkAchievements(); 
         notify('Idle generation rate will now increase by 1 point every 5 seconds!');
+        saveGameState();
     } else {
         notify(`Need ${unlockCosts.setUpgrade - points} more points!`);
     }
@@ -211,6 +218,7 @@ function unlockRelations() {
         relationsUnlocked = true; 
         updatePoints();
         notify('Relations unlocked! New upgrade available.');
+        saveGameState();
     } else {
         notify(`Need ${unlockCosts.relations - points} more points!`);
     }
@@ -234,6 +242,7 @@ function upgradeRelations() {
         updateTooltips();
         checkAchievements(); 
         notify('Activated 2.5x point boost every 60 seconds for 10 seconds!');
+        saveGameState();
     } else {
         notify(`Need ${unlockCosts.relationsUpgrade - points} more points!`);
     }
@@ -247,6 +256,7 @@ function unlockClassifying() {
         classifyingUnlocked = true; 
         updatePoints();
         notify('Classifying Relations unlocked! Secret upgrade available.');
+        saveGameState();
     } else {
         notify(`Need ${unlockCosts.classifying - points} more points!`);
     }
@@ -267,6 +277,7 @@ function upgradeClassifying() {
         updatePoints();
         updateTooltips();
         checkAchievements(); 
+        saveGameState();
     } else {
         notify(`Need ${unlockCosts.classifyingUpgrade - points} more points!`);
     }
@@ -313,7 +324,6 @@ function updateTooltips() {
         }
     });
 }
-
 
 function startMinigame() {
     // PAUSE AND LOAD MINIGAME
@@ -375,7 +385,6 @@ function startMinigame() {
     }, gameDuration);
 }
 
-
 function endMinigame() {
     // Back to normal main game
     document.getElementById('minigame-section').style.display = 'none';
@@ -398,6 +407,7 @@ function endMinigame() {
             notify('Point boost ended!');
         }, minigameScore * 1000); 
     }
+    saveGameState();
 }
 
 // UPGRADE SIDEBAR
@@ -411,11 +421,16 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 function initializeGame() {
+    if (!playerId) {
+        playerId = 'player-' + Math.random().toString(36).substr(2, 9);
+        localStorage.setItem('playerId', playerId);
+    }
     document.getElementById('menu-section').style.display = 'block';
     document.getElementById('game-section').style.display = 'none';
     createTooltips();
     updateTooltips();
     updateAchievementsDisplay();
+    loadGameState();
 }
 
 function startGame() {
@@ -438,4 +453,65 @@ function returnToMenu() {
     clearInterval(bonusInterval);
     idleInterval = null;
     bonusInterval = null;
+    saveGameState();
+}
+
+async function saveGameState() {
+    if (!playerId) return;
+    const state = {
+        playerId,
+        points,
+        minigameScore,
+        baseGenerationRate,
+        predicateUpgrades,
+        pointsPerSolve,
+        solveCooldown,
+        predicateUnlocked,
+        setUnlocked,
+        relationsUnlocked,
+        classifyingUnlocked,
+        totalUpgrades
+    };
+    try {
+        const response = await fetch(`${API_URL}/gameState`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(state)
+        });
+        if (!response.ok) console.error('Failed to save state:', response.status);
+    } catch (error) {
+        console.error('Error saving state:', error);
+    }
+}
+
+async function loadGameState() {
+    if (!playerId) return;
+    try {
+        const response = await fetch(`${API_URL}/gameState/${playerId}`);
+        if (response.ok) {
+            const state = await response.json();
+            points = state.points || 0;
+            minigameScore = state.minigameScore || 0;
+            baseGenerationRate = state.baseGenerationRate || 2;
+            predicateUpgrades = state.predicateUpgrades || 0;
+            pointsPerSolve = state.pointsPerSolve || 1;
+            solveCooldown = state.solveCooldown || 600;
+            predicateUnlocked = state.predicateUnlocked || false;
+            setUnlocked = state.setUnlocked || false;
+            relationsUnlocked = state.relationsUnlocked || false;
+            classifyingUnlocked = state.classifyingUnlocked || false;
+            totalUpgrades = state.totalUpgrades || 0;
+            updatePoints();
+            document.getElementById('predicate-upgrade').style.display = predicateUnlocked ? 'flex' : 'none';
+            document.getElementById('set-upgrade').style.display = setUnlocked ? 'flex' : 'none';
+            document.getElementById('relations-upgrade').style.display = relationsUnlocked ? 'flex' : 'none';
+            document.getElementById('classifying-upgrade').style.display = classifyingUnlocked ? 'flex' : 'none';
+            document.querySelector('button[onclick="unlockPredicate();"]').style.display = predicateUnlocked ? 'none' : 'block';
+            document.querySelector('button[onclick="unlockSet();"]').style.display = setUnlocked ? 'none' : 'block';
+            document.querySelector('button[onclick="unlockRelations();"]').style.display = relationsUnlocked ? 'none' : 'block';
+            document.querySelector('button[onclick="unlockClassifying();"]').style.display = classifyingUnlocked ? 'none' : 'block';
+        }
+    } catch (error) {
+        console.error('Error loading state:', error);
+    }
 }
