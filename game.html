@@ -1,58 +1,62 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <meta charset="UTF-8">
-    <title>Game</title>
-    <link rel="stylesheet" href="style.css" type="text/css">
-    <script src="scripts.js" defer></script>
+    <meta charset="UTF-8"> 
+    <title>Discrete Mathematics Simulator</title> 
+    <link rel="stylesheet" href="style.css" type="text/css"> 
+    <script src="scripts.js" defer></script> 
 </head>
 <body>
-    <!-- Points Counter -->
-    <div id="pointcount">
-        <h1 id="points-text">You have 0 proof points</h1>
-        <p id="rate-text">Idle generation rate is at 0.2 points/s</p>
+    <!-- MAIN MENU SCREEN -->
+    <div id="menu-section" class="menu">
+        <h1>Discrete Mathematics Simulator</h1> 
+        <div class="menu-buttons">
+            <button class="button" onclick="startGame();">Play</button> 
+        </div>
     </div>
-    
-    <!-- Events Button -->
-    <button id="event-button" class="button">📅 Events</button>
-
-    <!-- Achievements Button -->
-    <button id="achievements-button" class="button" onclick="toggleAchievements()">🏆 Achievements</button>
-
-    <!-- Achievements Panel -->
-    <div id="achievements-panel" style="display: none;">
-        <h2>Achievements</h2>
-        <ul id="achievements-list"></ul>
+    <!-- MAIN GAME SCREEN, HIDDEN AT START -->
+    <div id="game-section" style="display: none;">
+        <div id="pointcount">
+            <h1 id="points-text">You have 0 proof points</h1> 
+            <p id="rate-text">Idle generation rate is at 0.2 points/s</p> 
+        </div>
+        <button id="event-button" class="button">🕹️ Pink Flying Elephants Minigame</button> 
+        <button id="achievements-button" class="button" onclick="toggleAchievements()">🏆 Achievements</button> 
+        <div id="achievements-panel" style="display: none;">
+            <h2>Achievements</h2> 
+            <ul id="achievements-list"></ul> 
+        </div>
+        <button id="mainmenu-button" class="button" onclick="returnToMenu();">🏠 Main Menu</button> 
+        <div class="game-button-container">
+            <button class="button" onclick="solveQuestion();">Solve<br>Question</button> 
+        </div>
+        <div id="points-indicator"></div> 
+        <div id="notification-container"></div> 
+        <nav>
+            <ul id="nav-menu" aria-label="navigation menu">
+                <!-- UPGRADE UNLOCK BUTTONS -->
+                <li><button class="button" onclick="unlockPredicate();">Unlock Predicate Logic</button></li>
+                <li><button class="button" onclick="unlockSet();">Unlock Set Theory</button></li>
+                <li><button class="button" onclick="unlockRelations();">Unlock Relations</button></li>
+                <li><button class="button" onclick="unlockClassifying();">Unlock Classifying Relations</button></li>
+            </ul>
+        </nav>
+        <button id="nav-toggle" aria-label="toggle navigation menu" onclick="toggleNav()">☰</button> <!-- TOGGLES UPGRADE SIDEBAR -->
+        <!-- UPGRADE BUTTONS, HIDDEN UNTIL UNLOCKED -->
+        <button id="predicate-upgrade" class="button" onclick="upgradePredicate();">Increase Clicker Points!</button>
+        <button id="set-upgrade" class="button" onclick="upgradeSet();">Add 1 point to the idle generator every 5 seconds</button>
+        <button id="relations-upgrade" class="button" onclick="upgradeRelations();">10 second point boost!</button>
+        <button id="classifying-upgrade" class="button" onclick="upgradeClassifying();">SECRET</button>
     </div>
-
-    <!-- Main Menu Return Button -->
-    <button id="mainmenu-button" class="button" onclick="window.location.href='index.html'">🏠 Main Menu</button>
-
-   <!-- Main Gameplay Button -->
-    <div class="game-button-container">
-        <button class="button" onclick="solveQuestion();">Solve<br>Question</button>
+    <!-- MINIGAME SCREEN, HIDDEN AT START -->
+    <div id="minigame-section" style="display: none;">
+        <div id="minigame-container">
+            <div id="minigame-score" style="display: none;">
+                <h2>Pink Flying Elephants Minigame Over!</h2> <!-- MINIGAME END TITLE -->
+                <p id="score-text">You clicked 0 circles</p> <!-- SHOWS CIRCLES CLICKED -->
+                <button class="button" onclick="endMinigame();">Return to Game</button> <!-- BACK TO MAIN GAME -->
+            </div>
+        </div>
     </div>
-
-    <div id="points-indicator"></div>
-    <div id="notification-container"></div>
-
-    <!-- Right Sidebar -->
-    <nav>
-        <ul id="nav-menu" aria-label="navigation menu">
-            <li><button class="button" onclick="unlockPredicate();">Unlock Predicate Logic</button></li>
-            <li><button class="button" onclick="unlockSet();">Unlock Set Theory</button></li>
-            <li><button class="button" onclick="unlockRelations();">Unlock Relations</button></li>
-            <li><button class="button" onclick="unlockClassifying();">Unlock Classifying Relations</button></li>
-        </ul>
-    </nav>
-
-    <!-- Sidebar Toggle Button -->
-    <button id="nav-toggle" aria-label="toggle navigation menu" onclick="toggleNav()">☰</button>
-
-    <!-- Circles -->
-    <button id="predicate-upgrade" class="button" onclick="upgradePredicate();"> Increase Clicker Points!</button>
-    <button id="set-upgrade" class="button" onclick="upgradeSet();"> Add 1 point to the idle generator every 5 seconds</button>
-    <button id="relations-upgrade" class="button" onclick="upgradeRelations();"> 10 second point boost!</button>
-    <button id="classifying-upgrade" class="button" onclick="upgradeClassifying();"> SECRET </button>
 </body>
 </html>

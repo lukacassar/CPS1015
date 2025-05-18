@@ -1,14 +1,21 @@
-var points = 0;
-var cooldown = false;
-var baseGenerationRate = 2;
-var predicateUpgrades = 0;
-var pointsPerSolve = 1;
-var solveCooldown = 600;
-let predicateUnlocked = false;
-let setUnlocked = false;
-let relationsUnlocked = false;
-let classifyingUnlocked = false;
+let points = 0; 
+let cooldown = false; 
+let baseGenerationRate = 2; 
+let predicateUpgrades = 0; 
+let pointsPerSolve = 1; 
+let solveCooldown = 600; 
+let predicateUnlocked = false; 
+let setUnlocked = false; 
+let relationsUnlocked = false; 
+let classifyingUnlocked = false; 
+let totalUpgrades = 0; 
+let bonusInterval = null; 
+let idleInterval = null; 
+let minigameScore = 0; 
+let minigameInterval = null; 
+let pointBoostActive = false; 
 
+// in game notifications
 function notify(message) {
     const notification = document.createElement('div');
     notification.className = 'notification';
@@ -30,9 +37,6 @@ const achievements = [
     { id: 'upgrades_2', name: 'Upgrade Enthusiast', description: 'Purchase 2 upgrades', upgrades: 2, unlocked: false },
     { id: 'upgrades_3', name: 'Upgrade Master', description: 'Purchase 3 upgrades', upgrades: 3, unlocked: false }
 ];
-
-let totalUpgrades = 0; 
-
 
 function checkAchievements() {
     achievements.forEach(achievement => {
@@ -84,7 +88,6 @@ function showPointsIndicator(pointsGained) {
         }, 900); 
     }
 }
-
 function checkBonus() {
     let bonusChance = 0;
     if (classifyingUnlocked) {
@@ -105,7 +108,6 @@ function checkBonus() {
     }
 }
 
-
 const unlockCosts = {
     predicate: 100,
     set: 1000,
@@ -124,18 +126,18 @@ function updatePoints() {
 }
 
 function solveQuestion() {
-    if (cooldown) return;
-    points += pointsPerSolve;
-    showPointsIndicator(pointsPerSolve);
-    updatePoints();
-    cooldown = true;
-
-    var button = document.querySelector('button[onclick="solveQuestion();"]');
-    if (button) {
-        button.classList.add('cooldown');
+    if (!cooldown) {
+        let pointsGained = pointBoostActive ? pointsPerSolve * 3 : pointsPerSolve;
+        points += pointsGained;
+        showPointsIndicator(pointsGained);
+        updatePoints();
+        checkAchievements();
+        cooldown = true;
+        let solveButton = document.querySelector('.game-button-container .button');
+        solveButton.classList.add('cooldown');
         setTimeout(function () {
             cooldown = false;
-            button.classList.remove('cooldown');
+            solveButton.classList.remove('cooldown');
         }, solveCooldown);
     }
 }
@@ -313,22 +315,127 @@ function updateTooltips() {
 }
 
 
-setInterval(function () {
-    points += baseGenerationRate; 
-    showPointsIndicator(baseGenerationRate); 
-    updatePoints();
-}, 5000);  
+function startMinigame() {
+    // PAUSE AND LOAD MINIGAME
+    clearInterval(idleInterval);
+    clearInterval(bonusInterval);
+    idleInterval = null;
+    bonusInterval = null;
+    document.getElementById('menu-section').style.display = 'none';
+    document.getElementById('game-section').style.display = 'none';
+    document.getElementById('minigame-section').style.display = 'block';
+    document.getElementById('minigame-score').style.display = 'none';
+    minigameScore = 0;
+    
+    let spawnInterval = 1000; 
+    const gameDuration = 30000; 
+    let startTime = Date.now();
 
+    
+    function spawnCircle() {
+        const container = document.getElementById('minigame-container');
+        const circle = document.createElement('div');
+        circle.className = 'minigame-circle';
+        const maxX = container.clientWidth - 80;
+        const maxY = container.clientHeight - 80;
+        const x = Math.random() * maxX;
+        const y = Math.random() * maxY;
+        circle.style.left = `${x}px`;
+        circle.style.top = `${y}px`;
+        circle.onclick = () => {
+            minigameScore++;
+            circle.remove();
+        };
+        container.appendChild(circle);
+        setTimeout(() => circle.remove(), 1300);
+    }
+
+    // Adjusts circle spawn rate over time
+    function updateSpawnInterval() {
+        const elapsed = Date.now() - startTime;
+        if (elapsed >= 25000) spawnInterval = 100; // 0.1s at 25s
+        else if (elapsed >= 20000) spawnInterval = 200; // 0.2s at 20s
+        else if (elapsed >= 15000) spawnInterval = 400; // 0.4s at 15s
+        else if (elapsed >= 10000) spawnInterval = 600; // 0.6s at 10s
+        else if (elapsed >= 5000) spawnInterval = 800; // 0.8s at 5s
+    }
+
+    
+    minigameInterval = setInterval(() => {
+        updateSpawnInterval();
+        spawnCircle();
+    }, spawnInterval);
+
+    
+    setTimeout(() => {
+        clearInterval(minigameInterval);
+        minigameInterval = null;
+        document.getElementById('minigame-score').style.display = 'block';
+        document.getElementById('score-text').textContent = `You clicked ${minigameScore} circles`;
+    }, gameDuration);
+}
+
+
+function endMinigame() {
+    // Back to normal main game
+    document.getElementById('minigame-section').style.display = 'none';
+    document.getElementById('menu-section').style.display = 'none';
+    document.getElementById('game-section').style.display = 'block';
+    idleInterval = setInterval(function () {
+        let pointsGained = pointBoostActive ? baseGenerationRate * 3 : baseGenerationRate;
+        points += pointsGained;
+        showPointsIndicator(pointsGained);
+        updatePoints();
+    }, 5000);
+    bonusInterval = setInterval(checkBonus, 60000);
+    
+    if (minigameScore > 0) {
+        pointBoostActive = true;
+        notify('3x Point boost active for ' + minigameScore + ' seconds!');
+        setTimeout(() => {
+            pointBoostActive = false;
+            updatePoints();
+            notify('Point boost ended!');
+        }, minigameScore * 1000); 
+    }
+}
+
+// UPGRADE SIDEBAR
 function toggleNav() {
     document.querySelector("nav").classList.toggle("open");
     document.getElementById("nav-toggle").classList.toggle("active");
 }
 
 document.addEventListener('DOMContentLoaded', function() {
-    updatePoints();
+    initializeGame();
+});
+
+function initializeGame() {
+    document.getElementById('menu-section').style.display = 'block';
+    document.getElementById('game-section').style.display = 'none';
     createTooltips();
     updateTooltips();
     updateAchievementsDisplay();
-    setInterval(checkBonus, 30000); 
-});
+}
 
+function startGame() {
+    document.getElementById('menu-section').style.display = 'none';
+    document.getElementById('game-section').style.display = 'block';
+    updatePoints();
+    document.getElementById('event-button').onclick = startMinigame;
+    idleInterval = setInterval(function () {
+        points += baseGenerationRate;
+        showPointsIndicator(baseGenerationRate);
+        updatePoints();
+    }, 5000);
+    bonusInterval = setInterval(checkBonus, 60000);
+}
+
+function returnToMenu() {
+    document.getElementById('game-section').style.display = 'none';
+    document.getElementById('menu-section').style.display = 'block';
+    clearInterval(idleInterval);
+    clearInterval(bonusInterval);
+    idleInterval = null;
+    bonusInterval = null;
+}
