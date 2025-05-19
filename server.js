@@ -7,9 +7,10 @@ app.use(express.json());
 app.use(express.static('.'));
 
 let gameState = {};
+
 // PREP FOR SAVE
 app.post('/gameState', (req, res) => {
-    const { playerId, points, minigameScore, baseGenerationRate, predicateUpgrades, pointsPerSolve, solveCooldown, predicateUnlocked, setUnlocked, relationsUnlocked, classifyingUnlocked, totalUpgrades, achievements } = req.body;
+    const { playerId, points, minigameScore, baseGenerationRate, predicateUpgrades, pointsPerSolve, solveCooldown, predicateUnlocked, setUnlocked, relationsUnlocked, classifyingUnlocked, totalUpgrades, setUpgraded, relationsUpgraded, classifyingUpgraded, achievements } = req.body;
 
     // VALIDATION 
     if (!playerId || typeof playerId !== 'string' ||
@@ -24,12 +25,15 @@ app.post('/gameState', (req, res) => {
         typeof relationsUnlocked !== 'boolean' ||
         typeof classifyingUnlocked !== 'boolean' ||
         typeof totalUpgrades !== 'number' || totalUpgrades < 0 ||
+        typeof setUpgraded !== 'boolean' ||
+        typeof relationsUpgraded !== 'boolean' ||
+        typeof classifyingUpgraded !== 'boolean' ||
         !Array.isArray(achievements) || achievements.some(a => typeof a.unlocked !== 'boolean')) {
         return res.status(400).json({ error: 'Invalid data' });
     }
 
     // DATA SAVE
-    gameState[playerId] = { points, minigameScore, baseGenerationRate, predicateUpgrades, pointsPerSolve, solveCooldown, predicateUnlocked, setUnlocked, relationsUnlocked, classifyingUnlocked, totalUpgrades, achievements };
+    gameState[playerId] = { points, minigameScore, baseGenerationRate, predicateUpgrades, pointsPerSolve, solveCooldown, predicateUnlocked, setUnlocked, relationsUnlocked, classifyingUnlocked, totalUpgrades, setUpgraded, relationsUpgraded, classifyingUpgraded, achievements };
 
     res.json({ message: 'Game state saved' });
 });

@@ -9,6 +9,9 @@ let setUnlocked = false;
 let relationsUnlocked = false; 
 let classifyingUnlocked = false; 
 let totalUpgrades = 0; 
+let setUpgraded = false;
+let relationsUpgraded = false;
+let classifyingUpgraded = false;
 let bonusInterval = null; 
 let idleInterval = null; 
 let minigameScore = 0; 
@@ -194,9 +197,10 @@ function unlockSet() {
 }
 
 function upgradeSet() {
-    if (totalUpgrades > 0 && setUnlocked) return;
+    if (setUpgraded) return;
     if (points >= unlockCosts.setUpgrade) {
         points -= unlockCosts.setUpgrade;
+        setUpgraded = true;
         document.getElementById('set-upgrade').style.display = 'none';
         setInterval(() => {
             baseGenerationRate += 1;
@@ -230,9 +234,10 @@ function unlockRelations() {
 }
 
 function upgradeRelations() {
-    if (totalUpgrades > 0 && relationsUnlocked) return;
+    if (relationsUpgraded) return;
     if (points >= unlockCosts.relationsUpgrade) {
         points -= unlockCosts.relationsUpgrade;
+        relationsUpgraded = true;
         document.getElementById('relations-upgrade').style.display = 'none';
         setInterval(() => {
             pointsPerSolve *= 2.5;
@@ -270,9 +275,10 @@ function unlockClassifying() {
 }
 
 function upgradeClassifying() {
-    if (totalUpgrades > 0 && classifyingUnlocked) return;
+    if (classifyingUpgraded) return;
     if (points >= unlockCosts.classifyingUpgrade) {
         points -= unlockCosts.classifyingUpgrade;
+        classifyingUpgraded = true;
         document.getElementById('classifying-upgrade').style.display = 'none';
         if (Math.random() < 0.5) {
             points *= 3;
@@ -479,54 +485,51 @@ async function saveGameState() {
         relationsUnlocked,
         classifyingUnlocked,
         totalUpgrades,
+        setUpgraded,
+        relationsUpgraded,
+        classifyingUpgraded,
         achievements: achievements.map(a => ({ id: a.id, unlocked: a.unlocked }))
     };
-    try {
-        const response = await fetch(`${API_URL}/gameState`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(state)
-        });
-        if (!response.ok) console.error('Failed to save state:', response.status);
-    } catch (error) {
-        console.error('Error saving state:', error);
-    }
+    const response = await fetch(`${API_URL}/gameState`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(state)
+    });
 }
 
 async function loadGameState() {
     if (!playerId) return;
-    try {
-        const response = await fetch(`${API_URL}/gameState/${playerId}`);
-        if (response.ok) {
-            const state = await response.json();
-            points = state.points || 0;
-            minigameScore = state.minigameScore || 0;
-            baseGenerationRate = state.baseGenerationRate || 2;
-            predicateUpgrades = state.predicateUpgrades || 0;
-            pointsPerSolve = state.pointsPerSolve || 1;
-            solveCooldown = state.solveCooldown || 600;
-            predicateUnlocked = state.predicateUnlocked || false;
-            setUnlocked = state.setUnlocked || false;
-            relationsUnlocked = state.relationsUnlocked || false;
-            classifyingUnlocked = state.classifyingUnlocked || false;
-            totalUpgrades = state.totalUpgrades || 0;
-            if (state.achievements) {
-                state.achievements.forEach(saved => {
-                    const achievement = achievements.find(a => a.id === saved.id);
-                    if (achievement) achievement.unlocked = saved.unlocked;
-                });
-            }
-            updatePoints();
-            document.getElementById('predicate-upgrade').style.display = predicateUnlocked && predicateUpgrades === 0 ? 'flex' : 'none';
-            document.getElementById('set-upgrade').style.display = setUnlocked && totalUpgrades === 0 ? 'flex' : 'none';
-            document.getElementById('relations-upgrade').style.display = relationsUnlocked && totalUpgrades === 0 ? 'flex' : 'none';
-            document.getElementById('classifying-upgrade').style.display = classifyingUnlocked && totalUpgrades === 0 ? 'flex' : 'none';
-            document.querySelector('button[onclick="unlockPredicate();"]').style.display = predicateUnlocked ? 'none' : 'block';
-            document.querySelector('button[onclick="unlockSet();"]').style.display = setUnlocked ? 'none' : 'block';
-            document.querySelector('button[onclick="unlockRelations();"]').style.display = relationsUnlocked ? 'none' : 'block';
-            document.querySelector('button[onclick="unlockClassifying();"]').style.display = classifyingUnlocked ? 'none' : 'block';
+    const response = await fetch(`${API_URL}/gameState/${playerId}`);
+    if (response.ok) {
+        const state = await response.json();
+        points = state.points || 0;
+        minigameScore = state.minigameScore || 0;
+        baseGenerationRate = state.baseGenerationRate || 2;
+        predicateUpgrades = state.predicateUpgrades || 0;
+        pointsPerSolve = state.pointsPerSolve || 1;
+        solveCooldown = state.solveCooldown || 600;
+        predicateUnlocked = state.predicateUnlocked || false;
+        setUnlocked = state.setUnlocked || false;
+        relationsUnlocked = state.relationsUnlocked || false;
+        classifyingUnlocked = state.classifyingUnlocked || false;
+        totalUpgrades = state.totalUpgrades || 0;
+        setUpgraded = state.setUpgraded || false;
+        relationsUpgraded = state.relationsUpgraded || false;
+        classifyingUpgraded = state.classifyingUpgraded || false;
+        if (state.achievements) {
+            state.achievements.forEach(saved => {
+                const achievement = achievements.find(a => a.id === saved.id);
+                if (achievement) achievement.unlocked = saved.unlocked;
+            });
         }
-    } catch (error) {
-        console.error('Error loading state:', error);
+        updatePoints();
+        document.getElementById('predicate-upgrade').style.display = predicateUnlocked && predicateUpgrades === 0 ? 'flex' : 'none';
+        document.getElementById('set-upgrade').style.display = setUnlocked && !setUpgraded ? 'flex' : 'none';
+        document.getElementById('relations-upgrade').style.display = relationsUnlocked && !relationsUpgraded ? 'flex' : 'none';
+        document.getElementById('classifying-upgrade').style.display = classifyingUnlocked && !classifyingUpgraded ? 'flex' : 'none';
+        document.querySelector('button[onclick="unlockPredicate();"]').style.display = predicateUnlocked ? 'none' : 'block';
+        document.querySelector('button[onclick="unlockSet();"]').style.display = setUnlocked ? 'none' : 'block';
+        document.querySelector('button[onclick="unlockRelations();"]').style.display = relationsUnlocked ? 'none' : 'block';
+        document.querySelector('button[onclick="unlockClassifying();"]').style.display = classifyingUnlocked ? 'none' : 'block';
     }
 }
