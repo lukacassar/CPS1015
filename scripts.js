@@ -395,7 +395,7 @@ function startMinigame() {
         clearInterval(minigameInterval);
         minigameInterval = null;
         document.getElementById('minigame-score').style.display = 'block';
-        document.getElementById('score-text').textContent = `You clicked ${minigameScore} circles`;
+        document.getElementById('score-text').textContent = `You clicked ${minigameScore} elephants`;
     }, gameDuration);
 }
 
