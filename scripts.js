@@ -146,6 +146,7 @@ function solveQuestion() {
 }
 
 function unlockPredicate() {
+    if (predicateUnlocked) return;
     if (points >= unlockCosts.predicate) {
         points -= unlockCosts.predicate;
         document.getElementById('predicate-upgrade').style.display = 'flex';
@@ -160,6 +161,7 @@ function unlockPredicate() {
 }
 
 function upgradePredicate() {
+    if (predicateUpgrades > 0) return;
     if (points >= unlockCosts.predicateUpgrade) {
         points -= unlockCosts.predicateUpgrade;
         predicateUpgrades++;
@@ -177,6 +179,7 @@ function upgradePredicate() {
 }
 
 function unlockSet() {
+    if (setUnlocked) return;
     if (points >= unlockCosts.set) {
         points -= unlockCosts.set;
         document.getElementById('set-upgrade').style.display = 'flex';
@@ -191,6 +194,7 @@ function unlockSet() {
 }
 
 function upgradeSet() {
+    if (totalUpgrades > 0 && setUnlocked) return;
     if (points >= unlockCosts.setUpgrade) {
         points -= unlockCosts.setUpgrade;
         document.getElementById('set-upgrade').style.display = 'none';
@@ -211,6 +215,7 @@ function upgradeSet() {
 }
 
 function unlockRelations() {
+    if (relationsUnlocked) return;
     if (points >= unlockCosts.relations) {
         points -= unlockCosts.relations;
         document.getElementById('relations-upgrade').style.display = 'flex';
@@ -225,6 +230,7 @@ function unlockRelations() {
 }
 
 function upgradeRelations() {
+    if (totalUpgrades > 0 && relationsUnlocked) return;
     if (points >= unlockCosts.relationsUpgrade) {
         points -= unlockCosts.relationsUpgrade;
         document.getElementById('relations-upgrade').style.display = 'none';
@@ -249,6 +255,7 @@ function upgradeRelations() {
 }
 
 function unlockClassifying() {
+    if (classifyingUnlocked) return;
     if (points >= unlockCosts.classifying) {
         points -= unlockCosts.classifying;
         document.getElementById('classifying-upgrade').style.display = 'flex';
@@ -263,6 +270,7 @@ function unlockClassifying() {
 }
 
 function upgradeClassifying() {
+    if (totalUpgrades > 0 && classifyingUnlocked) return;
     if (points >= unlockCosts.classifyingUpgrade) {
         points -= unlockCosts.classifyingUpgrade;
         document.getElementById('classifying-upgrade').style.display = 'none';
@@ -470,7 +478,8 @@ async function saveGameState() {
         setUnlocked,
         relationsUnlocked,
         classifyingUnlocked,
-        totalUpgrades
+        totalUpgrades,
+        achievements: achievements.map(a => ({ id: a.id, unlocked: a.unlocked }))
     };
     try {
         const response = await fetch(`${API_URL}/gameState`, {
@@ -501,11 +510,17 @@ async function loadGameState() {
             relationsUnlocked = state.relationsUnlocked || false;
             classifyingUnlocked = state.classifyingUnlocked || false;
             totalUpgrades = state.totalUpgrades || 0;
+            if (state.achievements) {
+                state.achievements.forEach(saved => {
+                    const achievement = achievements.find(a => a.id === saved.id);
+                    if (achievement) achievement.unlocked = saved.unlocked;
+                });
+            }
             updatePoints();
-            document.getElementById('predicate-upgrade').style.display = predicateUnlocked ? 'flex' : 'none';
-            document.getElementById('set-upgrade').style.display = setUnlocked ? 'flex' : 'none';
-            document.getElementById('relations-upgrade').style.display = relationsUnlocked ? 'flex' : 'none';
-            document.getElementById('classifying-upgrade').style.display = classifyingUnlocked ? 'flex' : 'none';
+            document.getElementById('predicate-upgrade').style.display = predicateUnlocked && predicateUpgrades === 0 ? 'flex' : 'none';
+            document.getElementById('set-upgrade').style.display = setUnlocked && totalUpgrades === 0 ? 'flex' : 'none';
+            document.getElementById('relations-upgrade').style.display = relationsUnlocked && totalUpgrades === 0 ? 'flex' : 'none';
+            document.getElementById('classifying-upgrade').style.display = classifyingUnlocked && totalUpgrades === 0 ? 'flex' : 'none';
             document.querySelector('button[onclick="unlockPredicate();"]').style.display = predicateUnlocked ? 'none' : 'block';
             document.querySelector('button[onclick="unlockSet();"]').style.display = setUnlocked ? 'none' : 'block';
             document.querySelector('button[onclick="unlockRelations();"]').style.display = relationsUnlocked ? 'none' : 'block';

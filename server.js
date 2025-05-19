@@ -6,11 +6,10 @@ const PORT = 3000;
 app.use(express.json());
 app.use(express.static('.'));
 
-let gameState = {}; 
-
+let gameState = {};
 // PREP FOR SAVE
 app.post('/gameState', (req, res) => {
-    const { playerId, points, minigameScore, baseGenerationRate, predicateUpgrades, pointsPerSolve, solveCooldown, predicateUnlocked, setUnlocked, relationsUnlocked, classifyingUnlocked, totalUpgrades } = req.body;
+    const { playerId, points, minigameScore, baseGenerationRate, predicateUpgrades, pointsPerSolve, solveCooldown, predicateUnlocked, setUnlocked, relationsUnlocked, classifyingUnlocked, totalUpgrades, achievements } = req.body;
 
     // VALIDATION 
     if (!playerId || typeof playerId !== 'string' ||
@@ -24,12 +23,13 @@ app.post('/gameState', (req, res) => {
         typeof setUnlocked !== 'boolean' ||
         typeof relationsUnlocked !== 'boolean' ||
         typeof classifyingUnlocked !== 'boolean' ||
-        typeof totalUpgrades !== 'number' || totalUpgrades < 0) {
+        typeof totalUpgrades !== 'number' || totalUpgrades < 0 ||
+        !Array.isArray(achievements) || achievements.some(a => typeof a.unlocked !== 'boolean')) {
         return res.status(400).json({ error: 'Invalid data' });
     }
 
     // DATA SAVE
-    gameState[playerId] = { points, minigameScore, baseGenerationRate, predicateUpgrades, pointsPerSolve, solveCooldown, predicateUnlocked, setUnlocked, relationsUnlocked, classifyingUnlocked, totalUpgrades };
+    gameState[playerId] = { points, minigameScore, baseGenerationRate, predicateUpgrades, pointsPerSolve, solveCooldown, predicateUnlocked, setUnlocked, relationsUnlocked, classifyingUnlocked, totalUpgrades, achievements };
 
     res.json({ message: 'Game state saved' });
 });
@@ -43,7 +43,6 @@ app.get('/gameState/:playerId', (req, res) => {
         res.status(404).json({ error: 'Game state not found' });
     }
 });
-
 
 app.listen(PORT, () => {
     console.log(`Server running on http://localhost:${PORT}`);
